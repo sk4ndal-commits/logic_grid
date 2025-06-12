@@ -1,80 +1,122 @@
 import 'package:flutter/material.dart';
-import 'package:flame/game.dart';
-import 'package:logic_grid/game/logic_grid_game.dart';
+import 'package:provider/provider.dart';
+import 'package:logic_grid/game/grid_model.dart';
+import 'package:logic_grid/game/grid_widget.dart';
 
 class GameScreen extends StatelessWidget {
   const GameScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF1A1A2E),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF0F3460),
-        title: const Text(
-          'LogicGrid',
-          style: TextStyle(color: Colors.white),
+    return ChangeNotifierProvider(
+      create: (context) => GridModel(),
+      child: Scaffold(
+        backgroundColor: const Color(0xFF1A1A2E),
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF0F3460),
+          title: const Text(
+            'LogicGrid',
+            style: TextStyle(color: Colors.white),
+          ),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
-      body: Center(
-        // This is a placeholder for the actual Flame game
-        // In the future, we'll replace this with a GameWidget<LogicGridGame>
-        child: Container(
-          width: double.infinity,
-          height: double.infinity,
-          color: const Color(0xFF1A1A2E),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                'Game Screen Placeholder',
-                style: TextStyle(
-                  fontSize: 24,
-                  color: Colors.white,
+        body: Center(
+          child: Container(
+            width: double.infinity,
+            height: double.infinity,
+            color: const Color(0xFF1A1A2E),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  'Nonogram Puzzle',
+                  style: TextStyle(
+                    fontSize: 24,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              Container(
-                width: 300,
-                height: 300,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0F3460),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFF4ECCA3), width: 2),
+                const SizedBox(height: 20),
+
+                // Grid widget with clues
+                const GridWidget(),
+
+                const SizedBox(height: 30),
+
+                // Game controls
+                Consumer<GridModel>(
+                  builder: (context, gridModel, child) {
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Reset button
+                        ElevatedButton(
+                          onPressed: () {
+                            gridModel.resetGrid();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF0F3460),
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          ),
+                          child: const Text(
+                            'Reset',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 20),
+
+                        // Check solution button
+                        ElevatedButton(
+                          onPressed: () {
+                            final isCorrect = gridModel.checkSolution();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  isCorrect ? 'Correct! Well done!' : 'Not quite right. Keep trying!',
+                                ),
+                                backgroundColor: isCorrect ? Colors.green : Colors.red,
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF4ECCA3),
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          ),
+                          child: const Text(
+                            'Check',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Color(0xFF1A1A2E),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
-                child: const Center(
-                  child: Text(
-                    'Nonogram Puzzle\nComing Soon',
-                    textAlign: TextAlign.center,
+
+                const SizedBox(height: 20),
+
+                // Back to menu button
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text(
+                    'Back to Menu',
                     style: TextStyle(
-                      fontSize: 20,
-                      color: Colors.white,
+                      fontSize: 16,
+                      color: Colors.white70,
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 30),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4ECCA3),
-                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                ),
-                child: const Text(
-                  'Back to Menu',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFF1A1A2E),
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
