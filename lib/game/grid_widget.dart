@@ -13,6 +13,8 @@ class GridWidget extends StatelessWidget {
         return Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            // Add some extra spacing to ensure the grid is fully visible and clickable
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // Column clues and grid
               Row(
@@ -140,6 +142,8 @@ class GridWidget extends StatelessWidget {
       onTap: () {
         gridModel.toggleCellState(row, col);
       },
+      // Make sure the gesture detector has enough space and is properly hit-testable
+      behavior: HitTestBehavior.opaque,
       child: Container(
         width: 40,
         height: 40,
