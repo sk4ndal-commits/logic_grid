@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:logic_grid/game/grid_model.dart';
 import 'package:logic_grid/game/grid_widget.dart';
 import 'package:logic_grid/game/puzzle_model.dart';
+import 'package:logic_grid/game/story_model.dart';
+import 'package:logic_grid/game/story_overlay.dart';
 
 class GameScreen extends StatefulWidget {
   final String? puzzleId;
@@ -15,10 +17,12 @@ class GameScreen extends StatefulWidget {
 
 class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   late PuzzleRepository _puzzleRepository;
+  late StoryRepository _storyRepository;
   Puzzle? _currentPuzzle;
   late AnimationController _completionAnimationController;
   late Animation<double> _completionAnimation;
   bool _isLoading = true;
+  bool _showingStory = false;
 
   int _currentPuzzleIndex = 0;
 
@@ -28,6 +32,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
     // Initialize the puzzle repository
     _puzzleRepository = PuzzleRepository();
+
+    // Initialize the story repository
+    _storyRepository = StoryRepository();
 
     // Load puzzles
     _loadPuzzles();
@@ -47,8 +54,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     // Add a listener to the animation controller
     _completionAnimationController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        // Show the next puzzle button when the animation completes
-        setState(() {});
+        // Show the story overlay when the animation completes
+        setState(() {
+          _showingStory = true;
+        });
       }
     });
   }
@@ -83,9 +92,16 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
   void _goToNextPuzzle() {
     if (_currentPuzzleIndex < _puzzleRepository.puzzles.length - 1) {
+      // Unlock the next story segment for the current puzzle
+      if (_currentPuzzle != null) {
+        _storyRepository.unlockSegmentByPuzzleId(_currentPuzzle!.id);
+      }
+
       setState(() {
         _currentPuzzleIndex++;
         _currentPuzzle = _puzzleRepository.puzzles[_currentPuzzleIndex];
+        // Note: _showingStory is now set to false in the onContinue callback
+        // before calling this method, so we don't need to set it again here.
 
         // Unlock the next puzzle if it's locked
         if (_currentPuzzle!.isLocked) {
@@ -242,7 +258,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
                             // Next puzzle button
                             if (_currentPuzzleIndex < _puzzleRepository.puzzles.length - 1 && 
-                                gridModel.isPuzzleCompleted)
+                                gridModel.isPuzzleCompleted &&
+                                !_showingStory)
                               IconButton(
                                 onPressed: _goToNextPuzzle,
                                 icon: const Icon(Icons.arrow_forward_ios, color: Colors.white),
@@ -271,61 +288,74 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                 ),
                 ),
 
-                // Puzzle completion overlay
+                // Puzzle completion and story overlay
                 Consumer<GridModel>(
                   builder: (context, gridModel, child) {
+                    if (!gridModel.isPuzzleCompleted) {
+                      return const SizedBox.shrink();
+                    }
+
+                    // If showing story, display the story overlay
+                    if (_showingStory && _currentPuzzle != null) {
+                      // Get the story segment for the current puzzle
+                      final storySegment = _storyRepository.getSegmentByPuzzleId(_currentPuzzle!.id);
+
+                      if (storySegment != null) {
+                        // Use the StoryOverlay directly - it now handles pointer events correctly
+                        return StoryOverlay(
+                          segment: storySegment,
+                          animation: _completionAnimation,
+                          onContinue: () {
+                            // First, hide the story overlay
+                            setState(() {
+                              _showingStory = false;
+                            });
+
+                            // Then, handle navigation immediately without using Future.delayed
+                            if (_currentPuzzleIndex < _puzzleRepository.puzzles.length - 1) {
+                              _goToNextPuzzle();
+                              _completionAnimationController.reset();
+                            }
+                          },
+                        );
+                      }
+                    }
+
+                    // Otherwise show the completion message
                     return AnimatedBuilder(
                       animation: _completionAnimation,
                       builder: (context, child) {
-                        return gridModel.isPuzzleCompleted
-                            ? Positioned.fill(
-                                child: Opacity(
-                                  opacity: _completionAnimation.value * 0.7,
-                                  child: Container(
-                                    color: Colors.black,
-                                    child: Center(
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          // Scale up the text during the animation
-                                          Transform.scale(
-                                            scale: 0.5 + (_completionAnimation.value * 0.5),
-                                            child: const Text(
-                                              'Puzzle Complete!',
-                                              style: TextStyle(
-                                                fontSize: 36,
-                                                fontWeight: FontWeight.bold,
-                                                color: Color(0xFF4ECCA3),
-                                              ),
-                                            ),
+                        return Positioned.fill(
+                          child: IgnorePointer(
+                            // Ignore pointer events so buttons underneath remain clickable
+                            ignoring: true,
+                            child: Opacity(
+                              opacity: _completionAnimation.value * 0.7,
+                              child: Container(
+                                color: Colors.black,
+                                child: Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      // Scale up the text during the animation
+                                      Transform.scale(
+                                        scale: 0.5 + (_completionAnimation.value * 0.5),
+                                        child: const Text(
+                                          'Puzzle Complete!',
+                                          style: TextStyle(
+                                            fontSize: 36,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF4ECCA3),
                                           ),
-                                          const SizedBox(height: 20),
-                                          if (_completionAnimation.value > 0.8 &&
-                                              _currentPuzzleIndex < _puzzleRepository.puzzles.length - 1)
-                                            ElevatedButton(
-                                              onPressed: () {
-                                                _goToNextPuzzle();
-                                                _completionAnimationController.reset();
-                                              },
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor: const Color(0xFF4ECCA3),
-                                                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                                              ),
-                                              child: const Text(
-                                                'Next Puzzle',
-                                                style: TextStyle(
-                                                  fontSize: 18,
-                                                  color: Color(0xFF1A1A2E),
-                                                ),
-                                              ),
-                                            ),
-                                        ],
+                                        ),
                                       ),
-                                    ),
+                                    ],
                                   ),
                                 ),
-                              )
-                            : const SizedBox.shrink();
+                              ),
+                            ),
+                          ),
+                        );
                       },
                     );
                   },
