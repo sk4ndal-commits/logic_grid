@@ -10,38 +10,40 @@ class GridWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<GridModel>(
       builder: (context, gridModel, child) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Column clues and grid
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Empty space in top-left corner
-                SizedBox(
-                  width: 60,
-                  height: 60,
-                ),
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Column clues and grid
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Empty space in top-left corner
+                  SizedBox(
+                    width: 60,
+                    height: 60,
+                  ),
 
-                // Column clues
-                _buildColumnClues(gridModel),
-              ],
-            ),
+                  // Column clues
+                  _buildColumnClues(gridModel),
+                ],
+              ),
 
-            // Row clues and grid cells
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Row clues
-                _buildRowClues(gridModel),
+              // Row clues and grid cells
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Row clues
+                  _buildRowClues(gridModel),
 
-                // Grid cells
-                _buildGrid(context, gridModel),
-              ],
-            ),
-          ],
+                  // Grid cells
+                  _buildGrid(context, gridModel),
+                ],
+              ),
+            ],
+          ),
         );
       },
     );
