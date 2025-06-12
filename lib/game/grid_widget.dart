@@ -23,12 +23,12 @@ class GridWidget extends StatelessWidget {
                   width: 60,
                   height: 60,
                 ),
-                
+
                 // Column clues
                 _buildColumnClues(gridModel),
               ],
             ),
-            
+
             // Row clues and grid cells
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -36,7 +36,7 @@ class GridWidget extends StatelessWidget {
               children: [
                 // Row clues
                 _buildRowClues(gridModel),
-                
+
                 // Grid cells
                 _buildGrid(context, gridModel),
               ],
@@ -46,13 +46,13 @@ class GridWidget extends StatelessWidget {
       },
     );
   }
-  
+
   /// Builds the column clues (numbers at the top of each column)
   Widget _buildColumnClues(GridModel gridModel) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
-      children: List.generate(GridModel.gridSize, (col) {
+      children: List.generate(gridModel.gridSize, (col) {
         return Container(
           width: 40,
           height: 60,
@@ -75,13 +75,13 @@ class GridWidget extends StatelessWidget {
       }),
     );
   }
-  
+
   /// Builds the row clues (numbers at the left of each row)
   Widget _buildRowClues(GridModel gridModel) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
-      children: List.generate(GridModel.gridSize, (row) {
+      children: List.generate(gridModel.gridSize, (row) {
         return Container(
           width: 60,
           height: 40,
@@ -107,7 +107,7 @@ class GridWidget extends StatelessWidget {
       }),
     );
   }
-  
+
   /// Builds the main grid of cells
   Widget _buildGrid(BuildContext context, GridModel gridModel) {
     return Container(
@@ -116,10 +116,10 @@ class GridWidget extends StatelessWidget {
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: List.generate(GridModel.gridSize, (row) {
+        children: List.generate(gridModel.gridSize, (row) {
           return Row(
             mainAxisSize: MainAxisSize.min,
-            children: List.generate(GridModel.gridSize, (col) {
+            children: List.generate(gridModel.gridSize, (col) {
               return _buildCell(context, gridModel, row, col);
             }),
           );
@@ -127,13 +127,13 @@ class GridWidget extends StatelessWidget {
       ),
     );
   }
-  
+
   /// Builds an individual cell in the grid
   Widget _buildCell(BuildContext context, GridModel gridModel, int row, int col) {
     final cellState = gridModel.grid[row][col];
     final isCorrectRow = gridModel.isRowCorrect(row);
     final isCorrectCol = gridModel.isColumnCorrect(col);
-    
+
     return GestureDetector(
       onTap: () {
         gridModel.toggleCellState(row, col);
@@ -154,7 +154,7 @@ class GridWidget extends StatelessWidget {
       ),
     );
   }
-  
+
   /// Gets the background color for a cell based on its state
   Color _getCellColor(CellState state) {
     switch (state) {
@@ -165,7 +165,7 @@ class GridWidget extends StatelessWidget {
         return const Color(0xFF0F3460); // Dark blue for empty/marked cells
     }
   }
-  
+
   /// Gets the content (icon or text) for a cell based on its state
   Widget _getCellContent(CellState state) {
     switch (state) {

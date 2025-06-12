@@ -1,0 +1,74 @@
+{
+  "puzzles": [
+    {
+      "id": "puzzle_1",
+      "name": "Plus Sign",
+      "difficulty": "Easy",
+      "gridSize": 5,
+      "solution": [
+        [0, 0, 1, 0, 0],
+        [0, 0, 1, 0, 0],
+        [1, 1, 1, 1, 1],
+        [0, 0, 1, 0, 0],
+        [0, 0, 1, 0, 0]
+      ],
+      "isLocked": false
+    },
+    {
+      "id": "puzzle_2",
+      "name": "X Mark",
+      "difficulty": "Easy",
+      "gridSize": 5,
+      "solution": [
+        [1, 0, 0, 0, 1],
+        [0, 1, 0, 1, 0],
+        [0, 0, 1, 0, 0],
+        [0, 1, 0, 1, 0],
+        [1, 0, 0, 0, 1]
+      ],
+      "isLocked": false
+    },
+    {
+      "id": "puzzle_3",
+      "name": "Heart",
+      "difficulty": "Medium",
+      "gridSize": 5,
+      "solution": [
+        [0, 1, 0, 1, 0],
+        [1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1],
+        [0, 1, 1, 1, 0],
+        [0, 0, 1, 0, 0]
+      ],
+      "isLocked": true
+    },
+    {
+      "id": "puzzle_4",
+      "name": "Smiley",
+      "difficulty": "Medium",
+      "gridSize": 5,
+      "solution": [
+        [0, 1, 0, 1, 0],
+        [0, 1, 0, 1, 0],
+        [0, 0, 0, 0, 0],
+        [1, 0, 0, 0, 1],
+        [0, 1, 1, 1, 0]
+      ],
+      "isLocked": true
+    },
+    {
+      "id": "puzzle_5",
+      "name": "Diamond",
+      "difficulty": "Hard",
+      "gridSize": 5,
+      "solution": [
+        [0, 0, 1, 0, 0],
+        [0, 1, 0, 1, 0],
+        [1, 0, 0, 0, 1],
+        [0, 1, 0, 1, 0],
+        [0, 0, 1, 0, 0]
+      ],
+      "isLocked": true
+    }
+  ]
+}
