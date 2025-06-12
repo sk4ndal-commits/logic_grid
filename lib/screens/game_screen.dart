@@ -228,6 +228,42 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                             ),
                             const SizedBox(width: 20),
 
+                            // Hint button
+                            ElevatedButton(
+                              onPressed: gridModel.hintsRemaining > 0
+                                ? () {
+                                    gridModel.revealHint();
+                                  }
+                                : null, // Disable button when no hints remaining
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFE94560),
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                // Dim the button when disabled
+                                disabledBackgroundColor: const Color(0xFFE94560).withOpacity(0.3),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Text(
+                                    'Hint',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    '(${gridModel.hintsRemaining})',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.white70,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 20),
+
                             // Check solution button
                             ElevatedButton(
                               onPressed: () {

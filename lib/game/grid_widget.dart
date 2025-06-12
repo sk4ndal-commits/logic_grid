@@ -159,30 +159,34 @@ class GridWidget extends StatelessWidget {
 
   /// Gets the background color for a cell based on its state
   Color _getCellColor(CellState state) {
-    switch (state) {
-      case CellState.filled:
-        return const Color(0xFF4ECCA3); // Green for filled cells
-      case CellState.empty:
-      case CellState.marked:
-        return const Color(0xFF0F3460); // Dark blue for empty/marked cells
+    if (state == CellState.filled) {
+      return const Color(0xFF4ECCA3); // Green for filled cells
+    } else if (state == CellState.hint) {
+      return const Color(0xFFE94560); // Red for hint cells
+    } else {
+      return const Color(0xFF0F3460); // Dark blue for empty/marked cells
     }
   }
 
   /// Gets the content (icon or text) for a cell based on its state
   Widget _getCellContent(CellState state) {
-    switch (state) {
-      case CellState.marked:
-        return const Text(
-          'X',
-          style: TextStyle(
-            color: Colors.red,
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
-        );
-      case CellState.filled:
-      case CellState.empty:
-        return const SizedBox.shrink();
+    if (state == CellState.marked) {
+      return const Text(
+        'X',
+        style: TextStyle(
+          color: Colors.red,
+          fontWeight: FontWeight.bold,
+          fontSize: 20,
+        ),
+      );
+    } else if (state == CellState.hint) {
+      return const Icon(
+        Icons.lightbulb,
+        color: Colors.white,
+        size: 20,
+      );
+    } else {
+      return const SizedBox.shrink();
     }
   }
 }

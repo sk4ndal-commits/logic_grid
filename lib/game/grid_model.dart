@@ -7,6 +7,7 @@ enum CellState {
   empty,    // Cell is empty
   filled,   // Cell is filled (correct)
   marked,   // Cell is marked with an X (definitely not filled)
+  hint,     // Cell is revealed as a hint
 }
 
 /// Model class for the nonogram puzzle grid
@@ -28,6 +29,9 @@ class GridModel extends ChangeNotifier {
 
   // Flag to track if the puzzle is completed
   bool _isPuzzleCompleted = false;
+
+  // Number of available hints
+  int _hintsRemaining = 3;
 
   // Animation controller for puzzle completion
   AnimationController? _completionAnimationController;
@@ -52,6 +56,9 @@ class GridModel extends ChangeNotifier {
 
   /// Get the puzzle completion status
   bool get isPuzzleCompleted => _isPuzzleCompleted;
+
+  /// Get the number of hints remaining
+  int get hintsRemaining => _hintsRemaining;
 
   /// Set the animation controller
   set completionAnimationController(AnimationController controller) {
@@ -143,18 +150,20 @@ class GridModel extends ChangeNotifier {
       return; // Out of bounds
     }
 
-    // Cycle through states: empty -> filled -> marked -> empty
-    switch (_grid[row][col]) {
-      case CellState.empty:
-        _grid[row][col] = CellState.filled;
-        break;
-      case CellState.filled:
-        _grid[row][col] = CellState.marked;
-        break;
-      case CellState.marked:
-        _grid[row][col] = CellState.empty;
-        break;
+    // Don't allow toggling hint cells
+    if (_grid[row][col] == CellState.hint) {
+      return;
     }
+
+    // Cycle through states: empty -> filled -> marked -> empty
+    if (_grid[row][col] == CellState.empty) {
+      _grid[row][col] = CellState.filled;
+    } else if (_grid[row][col] == CellState.filled) {
+      _grid[row][col] = CellState.marked;
+    } else if (_grid[row][col] == CellState.marked) {
+      _grid[row][col] = CellState.empty;
+    }
+    // The hint case is handled by the early return above
 
     // Notify listeners that the grid has changed
     notifyListeners();
@@ -165,8 +174,9 @@ class GridModel extends ChangeNotifier {
     for (int row = 0; row < gridSize; row++) {
       for (int col = 0; col < gridSize; col++) {
         // If a cell should be filled but isn't, or shouldn't be filled but is
-        if ((_solution[row][col] && _grid[row][col] != CellState.filled) ||
-            (!_solution[row][col] && _grid[row][col] == CellState.filled)) {
+        // Consider both filled and hint cells as correct when they match the solution
+        if ((_solution[row][col] && _grid[row][col] != CellState.filled && _grid[row][col] != CellState.hint) ||
+            (!_solution[row][col] && (_grid[row][col] == CellState.filled || _grid[row][col] == CellState.hint))) {
           return false;
         }
       }
@@ -193,8 +203,8 @@ class GridModel extends ChangeNotifier {
     if (row < 0 || row >= gridSize) return false;
 
     for (int col = 0; col < gridSize; col++) {
-      if ((_solution[row][col] && _grid[row][col] != CellState.filled) ||
-          (!_solution[row][col] && _grid[row][col] == CellState.filled)) {
+      if ((_solution[row][col] && _grid[row][col] != CellState.filled && _grid[row][col] != CellState.hint) ||
+          (!_solution[row][col] && (_grid[row][col] == CellState.filled || _grid[row][col] == CellState.hint))) {
         return false;
       }
     }
@@ -206,8 +216,8 @@ class GridModel extends ChangeNotifier {
     if (col < 0 || col >= gridSize) return false;
 
     for (int row = 0; row < gridSize; row++) {
-      if ((_solution[row][col] && _grid[row][col] != CellState.filled) ||
-          (!_solution[row][col] && _grid[row][col] == CellState.filled)) {
+      if ((_solution[row][col] && _grid[row][col] != CellState.filled && _grid[row][col] != CellState.hint) ||
+          (!_solution[row][col] && (_grid[row][col] == CellState.filled || _grid[row][col] == CellState.hint))) {
         return false;
       }
     }
@@ -222,5 +232,57 @@ class GridModel extends ChangeNotifier {
       }
     }
     notifyListeners();
+  }
+
+  /// Reveal a correct cell as a hint
+  /// Returns true if a hint was used, false if no hints are available
+  bool revealHint() {
+    // Check if there are hints remaining
+    if (_hintsRemaining <= 0) {
+      return false;
+    }
+
+    // Find cells that are not already correct
+    List<List<int>> incorrectCells = [];
+    for (int row = 0; row < gridSize; row++) {
+      for (int col = 0; col < gridSize; col++) {
+        // If the cell should be filled but isn't, or shouldn't be filled but is
+        bool shouldBeFilled = _solution[row][col];
+        bool isCorrect = (shouldBeFilled && (_grid[row][col] == CellState.filled || _grid[row][col] == CellState.hint)) ||
+                         (!shouldBeFilled && _grid[row][col] != CellState.filled && _grid[row][col] != CellState.hint);
+
+        if (!isCorrect) {
+          incorrectCells.add([row, col]);
+        }
+      }
+    }
+
+    // If there are no incorrect cells, return false
+    if (incorrectCells.isEmpty) {
+      return false;
+    }
+
+    // Randomly select an incorrect cell
+    incorrectCells.shuffle();
+    int row = incorrectCells[0][0];
+    int col = incorrectCells[0][1];
+
+    // Set the cell to the correct state
+    if (_solution[row][col]) {
+      _grid[row][col] = CellState.hint;
+    } else {
+      _grid[row][col] = CellState.marked;
+    }
+
+    // Decrement the hint counter
+    _hintsRemaining--;
+
+    // Notify listeners
+    notifyListeners();
+
+    // Check if the puzzle is now complete
+    checkSolution();
+
+    return true;
   }
 }
