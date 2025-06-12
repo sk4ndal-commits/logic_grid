@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:logic_grid/screens/game_screen.dart';
+import 'package:logic_grid/screens/daily_puzzle_screen.dart';
 import 'package:logic_grid/game/puzzle_model.dart';
 
 class MainMenuScreen extends StatefulWidget {
@@ -104,6 +105,35 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
+
+                    // Daily puzzle button
+                    if (!_showPuzzleList)
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => const DailyPuzzleScreen(),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF4ECCA3),
+                          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        child: const Text(
+                          'DAILY PUZZLE',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1A1A2E),
+                          ),
+                        ),
+                      ),
+
+                    const SizedBox(height: 15),
 
                     // Quick play button
                     if (!_showPuzzleList)
